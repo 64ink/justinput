@@ -1,4 +1,4 @@
-# State Machine
+# Just Input
 
 Java implementation of primitive to create an input stream based on a variety of common locations including the class path, file system and over the network.  It is just that simple, but packaged all in one place for ease of use.   
 
