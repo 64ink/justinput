@@ -44,6 +44,11 @@ As with anything in java that needs to load a resource, a ClassLoader is require
 		Reader input = new JustInput("http://mysite.com/myreource.json").getReader();
 		Reader input = new JustInput("file:../myreource.json").getReader();
 		Reader input = new JustInput("myreource.json").getReader();
+
+		URL url = new JustInput("classpath:myreource.json").getUrl();
+		URL url = new JustInput("http://mysite.com/myreource.json").getUrl();
+		URL url = new JustInput("file:../myreource.json").getUrl();
+		URL url = new JustInput("myreource.json").getUrl();
 ```
 
 ## Static Usage 
@@ -61,4 +66,9 @@ As with anything in java that needs to load a resource, a ClassLoader is require
 		Reader input = JustInput.newReader("http://mysite.com/myreource.json", myClassLoader);
 		Reader input = JustInput.newReader("file:../myreource.json", myClassLoader);
 		Reader input = JustInput.newReader("myreource.json", myClassLoader);
+
+		URL url = JustInput.newUrl("classpath:myreource.json", myClassLoader);
+		URL url = JustInput.newUrl("http://mysite.com/myreource.json", myClassLoader);
+		URL url = JustInput.newUrl("file:../myreource.json", myClassLoader);
+		URL url = JustInput.newUrl("myreource.json", myClassLoader);
 ```

@@ -61,6 +61,8 @@ public class JustInput {
 			if (resourceUrl == null) {
 				throw new IOException("Unable to find class resource '" + resource + "'");
 			}
+			System.out.println(path);
+			System.out.println(" " + resourceUrl.toExternalForm());
 			URLConnection connection = resourceUrl.openConnection();
 			input = connection.getInputStream();
 		} else if (path.contains(PATTERN_URL)) {
@@ -70,8 +72,16 @@ public class JustInput {
 		} else if (path.contains(PREFIX_FILE)) {
 			String resource = path.substring(PREFIX_FILE.length());
 			File file = new File(resource);
-			FileInputStream fileStream = new FileInputStream(file);
-			input = new BufferedInputStream(fileStream);
+			if (file.exists()) {
+				input = new FileInputStream(file);
+			} else {
+				URL resourceUrl = classLoader.getResource(path);
+				if (resourceUrl == null) {
+					throw new IOException("Unable to find file or resource '" + path + "'");
+				}
+				URLConnection connection = resourceUrl.openConnection();
+				input = connection.getInputStream();
+			}
 		} else {
 			File file = new File(path);
 			if (file.exists()) {
@@ -87,6 +97,63 @@ public class JustInput {
 		}
 		return new BufferedInputStream(input);
 
+	}
+
+	/**
+	 * Creates a URL based on a generic path string from a file, class resource,
+	 * network URL.
+	 * 
+	 * If path starts with "classpath:XYZ", then XYZ will be loaded from the class
+	 * path.
+	 * 
+	 * If path is a URL which contains "://", then it will loaded via URL.
+	 * 
+	 * If path starts with "file:XYZ", then XYZ will be loaded from the local file
+	 * system.
+	 * 
+	 * Otherwise, the entire path is consider as file:path and loaded from the file
+	 * system. If still not found, this class path is checked as a fallback.
+	 * 
+	 * @param path        the path
+	 * @param classLoader alternative class loader or null for default.
+	 * @return the input stream
+	 * @throws IOException on error
+	 */
+	public static URL newUrl(String path, ClassLoader classLoader) throws IOException {
+		if (path == null || path.isEmpty()) {
+			throw new IOException("Cannot load from an empty path.");
+		}
+		if (path.startsWith(PREFIX_CLASSPATH)) {
+			String resource = path.substring(PREFIX_CLASSPATH.length());
+			URL resourceUrl = classLoader.getResource(resource);
+			if (resourceUrl == null) {
+				throw new IOException("Unable to find class resource '" + resource + "'");
+			}
+			return resourceUrl;
+		}
+
+		if (path.contains(PATTERN_URL)) {
+			return new URL(path);
+		}
+
+		if (path.contains(PREFIX_FILE)) {
+			String resource = path.substring(PREFIX_FILE.length());
+			File file = new File(resource);
+			if (file.exists()) {
+				return file.toURI().toURL();
+			}
+		} else {
+			File file = new File(path);
+			if (file.exists()) {
+				return file.toURI().toURL();
+			}
+		}
+
+		URL resourceUrl = classLoader.getResource(path);
+		if (resourceUrl == null) {
+			throw new IOException("Unable to find file or resource '" + path + "'");
+		}
+		return resourceUrl;
 	}
 
 	/**
@@ -106,7 +173,7 @@ public class JustInput {
 	 * 
 	 * @param path        the path
 	 * @param classLoader alternative class loader or null for default.
-	 * @return the input stream
+	 * @return the URL
 	 * @throws IOException on error
 	 */
 	public static Reader newReader(String path, ClassLoader classLoader) throws IOException {
@@ -151,4 +218,13 @@ public class JustInput {
 	public Reader getReader() throws IOException {
 		return newReader(path, getClass().getClassLoader());
 	}
+
+	/**
+	 * @return a Reader
+	 * @throws IOException on error
+	 */
+	public URL getUrl() throws IOException {
+		return newUrl(path, getClass().getClassLoader());
+	}
+
 }
