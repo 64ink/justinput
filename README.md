@@ -14,7 +14,7 @@ Build status:[![build_status](https://travis-ci.org/nofacepress/justinput.svg?br
 <dependency>
   <groupId>com.nofacepress</groupId>
   <artifactId>justinput</artifactId>
-  <version>0.1.0</version>
+  <version>0.3.0</version>
 </dependency>
 ```
 

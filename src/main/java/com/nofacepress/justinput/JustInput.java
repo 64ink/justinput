@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -54,7 +55,7 @@ public class JustInput {
 		if (path == null || path.isEmpty()) {
 			throw new IOException("Cannot load from an empty path.");
 		}
-		InputStream input;
+		InputStream input = null;
 		if (path.startsWith(PREFIX_CLASSPATH)) {
 			String resource = path.substring(PREFIX_CLASSPATH.length());
 			URL resourceUrl = classLoader.getResource(resource);
@@ -74,13 +75,6 @@ public class JustInput {
 			File file = new File(resource);
 			if (file.exists()) {
 				input = new FileInputStream(file);
-			} else {
-				URL resourceUrl = classLoader.getResource(path);
-				if (resourceUrl == null) {
-					throw new IOException("Unable to find file or resource '" + path + "'");
-				}
-				URLConnection connection = resourceUrl.openConnection();
-				input = connection.getInputStream();
 			}
 		} else {
 			File file = new File(path);
@@ -88,20 +82,32 @@ public class JustInput {
 				input = new FileInputStream(file);
 			} else {
 				URL resourceUrl = classLoader.getResource(path);
-				if (resourceUrl == null) {
-					throw new IOException("Unable to find file or resource '" + path + "'");
+				if (resourceUrl != null) {
+					URLConnection connection = resourceUrl.openConnection();
+					input = connection.getInputStream();
 				}
-				URLConnection connection = resourceUrl.openConnection();
-				input = connection.getInputStream();
 			}
 		}
+
+		// last try to use a URL in case it is some odd protocol
+		if (input == null) {
+			try {
+				URL url = new URL(path);
+				URLConnection connection = url.openConnection();
+				input = connection.getInputStream();
+			} catch (MalformedURLException e) {
+				throw new IOException("Unable to find file or resource '" + path + "'");
+			}
+		}
+
 		return new BufferedInputStream(input);
 
 	}
 
 	/**
 	 * Creates a URL based on a generic path string from a file, class resource,
-	 * network URL.
+	 * network URL. Be aware that the URL may not point to anything since it was
+	 * never opened like in the other methods.
 	 * 
 	 * If path starts with "classpath:XYZ", then XYZ will be loaded from the class
 	 * path.
@@ -116,7 +122,7 @@ public class JustInput {
 	 * 
 	 * @param path        the path
 	 * @param classLoader alternative class loader or null for default.
-	 * @return the input stream
+	 * @return the URL
 	 * @throws IOException on error
 	 */
 	public static URL newUrl(String path, ClassLoader classLoader) throws IOException {
@@ -147,13 +153,20 @@ public class JustInput {
 			if (file.exists()) {
 				return file.toURI().toURL();
 			}
+
+			URL resourceUrl = classLoader.getResource(path);
+			if (resourceUrl != null) {
+				return resourceUrl;
+			}
 		}
 
-		URL resourceUrl = classLoader.getResource(path);
-		if (resourceUrl == null) {
+		// last try to use a URL in case it is some odd protocol
+		try {
+			return new URL(path);
+		} catch (MalformedURLException e) {
 			throw new IOException("Unable to find file or resource '" + path + "'");
 		}
-		return resourceUrl;
+
 	}
 
 	/**
