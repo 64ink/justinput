@@ -62,8 +62,6 @@ public class JustInput {
 			if (resourceUrl == null) {
 				throw new IOException("Unable to find class resource '" + resource + "'");
 			}
-			System.out.println(path);
-			System.out.println(" " + resourceUrl.toExternalForm());
 			URLConnection connection = resourceUrl.openConnection();
 			input = connection.getInputStream();
 		} else if (path.contains(PATTERN_URL)) {

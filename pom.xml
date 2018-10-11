@@ -5,7 +5,7 @@
 
 	<groupId>com.nofacepress</groupId>
 	<artifactId>justinput</artifactId>
-	<version>0.3.0</version>
+	<version>0.4.0</version>
 	<packaging>jar</packaging>
 
 	<name>justinput</name>
