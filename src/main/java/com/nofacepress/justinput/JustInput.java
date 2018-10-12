@@ -16,6 +16,7 @@
 package com.nofacepress.justinput;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class JustInput {
 	 * @return the input stream
 	 * @throws IOException on error
 	 */
-	public static InputStream newInputStream(String path, ClassLoader classLoader) throws IOException {
+	public static BufferedInputStream newInputStream(String path, ClassLoader classLoader) throws IOException {
 		if (path == null || path.isEmpty()) {
 			throw new IOException("Cannot load from an empty path.");
 		}
@@ -187,8 +188,8 @@ public class JustInput {
 	 * @return the URL
 	 * @throws IOException on error
 	 */
-	public static Reader newReader(String path, ClassLoader classLoader) throws IOException {
-		return new InputStreamReader(newInputStream(path, classLoader));
+	public static BufferedReader newReader(String path, ClassLoader classLoader) throws IOException {
+		return new BufferedReader(new InputStreamReader(newInputStream(path, classLoader)));
 	}
 
 	private final String path;
